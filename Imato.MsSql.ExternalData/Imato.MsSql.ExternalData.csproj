@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FastMember" Version="1.5.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+  </ItemGroup>
+
+	<PropertyGroup>
+		<PackageId>Imato.MsSql.ExternalData</PackageId>
+		<Title>Imato.MsSql.ExternalData</Title>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Alexey Varentsov (@imato)</Authors>
+		<Company>Imato</Company>
+		<PackageProjectUrl>https://github.com/Imato/Imato.MsSql.ExternalData</PackageProjectUrl>
+		<Description>MS SQL External Process cmd</Description>
+		<Summary>Put data into sql from external cmd process</Summary>
+		<RepositoryUrl>https://github.com/Imato/Imato.MsSql.ExternalData</RepositoryUrl>
+		<PackageTags>MS SQL cmd external data</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReleaseNotes>Ready to use</PackageReleaseNotes>
+		<Version>1.0.0</Version>
+		<AssemblyName>Imato.MsSql.ExternalData</AssemblyName>
+		<PackageIcon>icon.png</PackageIcon>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<DebugType>portable</DebugType>
+		<Copyright>Alexey Varentsov</Copyright>
+		<RequireLicenseAcceptance>false</RequireLicenseAcceptance>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="icon.png" Pack="true" Visible="false" PackagePath="" />
+	</ItemGroup>
+
+</Project>
