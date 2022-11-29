@@ -1,6 +1,6 @@
 ﻿namespace Imato.MsSql.ExternalData.Example
 {
-    internal class DaysProcess : Process<MonthDay>
+    public class DaysProcess : Process<MonthDay>
     {
         public DaysProcess(string[] args) : base(args)
         {

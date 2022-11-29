@@ -4,25 +4,32 @@
     {
         protected readonly Dictionary<string, string> Parameters;
         private readonly DbContext context;
+        protected bool debug;
 
         public Process(string[] args)
         {
             Parameters = Parse(args);
             context = new DbContext(GetParameter("Table"), GetParameter("ConnectionString"));
+            debug = bool.Parse(GetParameter("Debug") ?? "false");
+            PrintTime("Create process");
         }
 
         public async Task RunAsync()
         {
             try
             {
+                PrintTime("Get data");
                 var data = (await CreateDataAsync(Parameters))
                 .Union(CreateData(Parameters));
+                PrintTime("Save process");
                 await context.SaveAsync(data);
             }
             catch (Exception ex)
             {
                 Console.Error.Write(ex.ToString());
             }
+
+            PrintTime("Done");
         }
 
         /// <summary>
@@ -47,30 +54,41 @@
             return Enumerable.Empty<T>();
         }
 
+        protected void PrintTime(string name)
+        {
+            if (debug)
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss.fff")}: {name}");
+        }
+
         private Dictionary<string, string> Parse(string[] args)
         {
             var result = new Dictionary<string, string>();
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i].StartsWith("ConnectionString="))
+                var sp = args[i].IndexOf("=");
+                if (sp <= 0)
                 {
-                    result.Add("ConnectionString", args[i].Replace("ConnectionString=", ""));
+                    throw new ApplicationException("Parameter must as 'Key=Value'");
                 }
-                else
-                {
-                    var ss = args[i].Split("=");
-                    if (ss.Length == 2)
-                    {
-                        result.Add(ss[0], ss[1]);
-                    }
-                }
+
+                var key = args[i].Substring(0, sp);
+                var value = args[i].Substring(sp + 1, args[i].Length - sp - 1);
+                value = value.StartsWith("\"") && value.EndsWith("\"")
+                    ? args[i].Substring(sp + 2, args[i].Length - sp - 3)
+                    : value;
+                result.Add(key, value);
             }
             return result;
         }
 
-        protected string? GetParameter(string name)
+        public string? GetParameter(string name)
         {
             return Parameters.ContainsKey(name) ? Parameters[name] : null;
+        }
+
+        public string GetMandatoryParameter(string name)
+        {
+            return GetParameter(name) ?? throw new ArgumentNullException(name);
         }
     }
 }

@@ -1,50 +1,65 @@
-# Imato.Api.Request
+# Imato.MsSql.ExternalData
 
-Generic helpers for REST API
+How to put data from external cmd process to SQL server
 
 ### Using 
 
-#### API
-
+1. Create your own process to produce new data. 
+Override CreateData in Process
+Imato.MsSql.ExternalData.Example
 ```csharp
-using Imato.Api.Request;
-
-// Create service
-var service = new ApiService(new ApiOptions
+internal class DaysProcess : Process<MonthDay>
 {
-    ApiUrl = "https://www.boredapi.com/api",
-    Timeout = 3000,
-    RetryCount = 3, 
-    Delay = 500
-});
-
-// Get
-var getResult = await service.GetAsync<NewActivity>(path: "/activity", queryParams: new { type = "education" });
-
-// POST
-var postResult = await service.PostAsync<NewActivity>(path: "/activity", 
-    queryParams: new { key = "100" },
-    data: new NewActivity
+    public DaysProcess(string[] args) : base(args)
     {
-        Activity = "Test"
-    });
+    }
 
-// Or view result messages
-var postMessage = await service.PostAsync<ApiResult>(path: "/activity", 
-    queryParams: new { key = "100" },
-    data: new NewActivity
+    protected override IEnumerable<MonthDay> CreateData(
+        IDictionary<string, string> parameters)
     {
-        Activity = "Test"
-    });
-
-// Or without result
-await service.PostAsync(path: "/activity", 
-    queryParams: new { key = "100" },
-    data: new NewActivity
-    {
-        Activity = "Test"
-    });
-
+        ....
+    }
+}
 ```
 
+2. Create table for DTO class MonthDay in DB
+```sql
+create table ##test
+(
+Id int,
+Name varchar(30),
+Date datetime,
+IsDayOf bit
+)
+```
 
+3. Run process
+```csharp
+public static async Task Main(string[] args)
+{
+    await new DaysProcess(args).RunAsync();
+}
+```
+
+4. Start your executable for producing data with parameters
+```
+>Imato.MsSql.ExternalData.Example.exe Year=2022 Month=10
+```
+
+Add special parameter for destination table
+```
+>Imato.MsSql.ExternalData.Example.exe Year=2022 Month=10 Table=##test
+```
+
+Override connection string if it isn't local
+```
+>Imato.MsSql.ExternalData.Example.exe Year=2022 Month=10 Table=##test ConnectionString=yourConnection
+```
+
+5. Execute your cmd util in t-sql script  
+Create procedure execmd.sql in msdb.  
+Start 
+```sql
+exec dbo.execmd 'Imato.MsSql.ExternalData.Example.exe Year=2022 Month=10 Table=##test'
+```
+Use data from ##test in t-sql script.

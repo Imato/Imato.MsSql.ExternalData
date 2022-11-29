@@ -18,15 +18,16 @@ namespace Imato.MsSql.ExternalData
             }
         }
 
-        public SqlBulkCopy CreateBulkCopy<T>()
+        public SqlBulkCopy CreateBulkCopy<T>(string[]? fields = null)
         {
             var bulkCopy = new SqlBulkCopy(_connectionString, SqlBulkCopyOptions.Default);
-            bulkCopy.BatchSize = 10_000;
+            bulkCopy.BatchSize = 1_000;
             bulkCopy.BulkCopyTimeout = 60_000;
             bulkCopy.DestinationTableName = _tableName;
-            foreach (var prop in typeof(T).GetProperties().Select(x => x.Name))
+            fields ??= typeof(T).GetProperties().Select(x => x.Name).ToArray();
+            foreach (var field in fields)
             {
-                bulkCopy.ColumnMappings.Add(prop, prop);
+                bulkCopy.ColumnMappings.Add(field, field);
             }
             return bulkCopy;
         }
