@@ -24,7 +24,7 @@
 		<PackageTags>MS SQL cmd external data</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReleaseNotes>Ready to use</PackageReleaseNotes>
-		<Version>1.4.0</Version>
+		<Version>1.5.0</Version>
 		<AssemblyName>Imato.MsSql.ExternalData</AssemblyName>
 		<PackageIcon>icon.png</PackageIcon>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>

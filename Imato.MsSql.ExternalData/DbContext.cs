@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Imato.MsSql.ExternalData
 {
-    internal class DbContext
+    public class DbContext
     {
         private readonly string _connectionString = "Data Source=localhost; Initial Catalog=master; Trusted_Connection=True;";
         private readonly string? _tableName;
@@ -16,6 +16,11 @@ namespace Imato.MsSql.ExternalData
             {
                 _connectionString = connectionString;
             }
+        }
+
+        public SqlConnection GetConnection()
+        {
+            return new SqlConnection(_connectionString);
         }
 
         public SqlBulkCopy CreateBulkCopy<T>(string[]? fields = null)

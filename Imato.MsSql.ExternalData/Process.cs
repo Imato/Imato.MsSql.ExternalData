@@ -2,8 +2,8 @@
 {
     public class Process<T>
     {
-        protected readonly Dictionary<string, string> Parameters;
-        private readonly DbContext context;
+        protected readonly Dictionary<string, string> Parameters = null!;
+        protected readonly DbContext context = null!;
         protected bool debug;
 
         public Process(string[] args)
