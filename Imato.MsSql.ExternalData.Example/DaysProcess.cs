@@ -1,16 +1,15 @@
 ﻿namespace Imato.MsSql.ExternalData.Example
 {
-    public class DaysProcess : Process<MonthDay>
+    public class DaysProcess : DataProcess<MonthDay>
     {
         public DaysProcess(string[] args) : base(args)
         {
         }
 
-        protected override IEnumerable<MonthDay> CreateData(
-            IDictionary<string, string> parameters)
+        protected override IEnumerable<MonthDay> CreateData()
         {
-            var year = int.Parse(parameters["Year"]);
-            var month = int.Parse(parameters["Month"]);
+            var year = int.Parse(GetMandatoryParameter("Year"));
+            var month = int.Parse(GetMandatoryParameter("Month"));
             var date = new DateTime(year, month, 1);
             var lastDate = date.AddMonths(1);
             while (date < lastDate)

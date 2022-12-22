@@ -3,7 +3,7 @@ use msdb
 go
 
 create proc dbo.execmd
-@cmd varchar(4000)
+@cmd varchar(8000)
 as
 begin
 	set nocount on;

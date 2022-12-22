@@ -2,7 +2,7 @@
   "profiles": {
     "Imato.MsSql.ExternalData.Example": {
       "commandName": "Project",
-      "commandLineArgs": "Year=2000 Month=2 Table=##test"
+      "commandLineArgs": "Year=2000 Month=2"
     }
   }
 }

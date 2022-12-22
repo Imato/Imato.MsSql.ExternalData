@@ -1,6 +1,10 @@
 ﻿using FastMember;
+using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Imato.MsSql.ExternalData
 {
@@ -23,13 +27,12 @@ namespace Imato.MsSql.ExternalData
             return new SqlConnection(_connectionString);
         }
 
-        public SqlBulkCopy CreateBulkCopy<T>(string[]? fields = null)
+        public SqlBulkCopy CreateBulkCopy(IEnumerable<string> fields)
         {
             var bulkCopy = new SqlBulkCopy(_connectionString, SqlBulkCopyOptions.Default);
             bulkCopy.BatchSize = 1_000;
             bulkCopy.BulkCopyTimeout = 60_000;
             bulkCopy.DestinationTableName = _tableName;
-            fields ??= typeof(T).GetProperties().Select(x => x.Name).ToArray();
             foreach (var field in fields)
             {
                 bulkCopy.ColumnMappings.Add(field, field);
@@ -37,10 +40,23 @@ namespace Imato.MsSql.ExternalData
             return bulkCopy;
         }
 
+        public SqlBulkCopy CreateBulkCopy<T>(IEnumerable<string>? fields = null)
+        {
+            fields ??= typeof(T).GetProperties().Select(x => x.Name);
+            return CreateBulkCopy(fields);
+        }
+
         public async Task SaveAsync<T>(IEnumerable<T> data)
         {
             if (_tableName != null)
             {
+                var dictionaryList = data as IEnumerable<IDictionary<string, object>>;
+                if (dictionaryList != null)
+                {
+                    await SaveAsync(dictionaryList);
+                    return;
+                }
+
                 using var bc = CreateBulkCopy<T>();
                 using var reader = ObjectReader.Create(data);
                 await bc.WriteToServerAsync(reader);
@@ -50,25 +66,39 @@ namespace Imato.MsSql.ExternalData
             PrintData(data);
         }
 
+        private async Task SaveAsync(IEnumerable<IDictionary<string, object>> data)
+        {
+            List<string> fields = new List<string>();
+            var dataTable = new DataTable();
+            foreach (var d in data)
+            {
+                if (fields.Count == 0)
+                {
+                    foreach (var key in d.Keys)
+                    {
+                        dataTable.Columns.Add(key, d[key].GetType());
+                        fields.Add(key);
+                    }
+                }
+
+                var row = dataTable.NewRow();
+                foreach (var key in d.Keys)
+                {
+                    row[key] = d[key];
+                }
+                dataTable.Rows.Add(row);
+            }
+
+            using var bc = CreateBulkCopy(fields);
+            await bc.WriteToServerAsync(dataTable);
+        }
+
         private void PrintData<T>(IEnumerable<T> data)
         {
             Console.WriteLine($"Specify destination table name in parameters (Table=dbo.test)");
             Console.WriteLine("");
-            Console.WriteLine("Data:");
-            var columns = string.Join(";", typeof(T).GetProperties().Select(x => x.Name));
-            Console.WriteLine(columns);
-            var sb = new StringBuilder();
-            foreach (var d in data)
-            {
-                sb.Clear();
-                foreach (var p in typeof(T).GetProperties())
-                {
-                    if (sb.Length > 0)
-                        sb.Append(";");
-                    sb.Append(p.GetValue(d)?.ToString() ?? "null");
-                }
-                Console.WriteLine(sb);
-            }
+            Console.WriteLine("Output data:");
+            ConsoleOutput.WriteCsv(data, LogLevel.Error);
         }
     }
 }
