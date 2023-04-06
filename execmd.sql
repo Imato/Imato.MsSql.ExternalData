@@ -2,28 +2,29 @@
 use msdb
 go
 
-create proc dbo.execmd
-@cmd varchar(8000)
-as
+create proc [dbo].[execmd] 
+	@cmd varchar(4000),
+	@ignore_error bit = 0
+as 
 begin
 	set nocount on;
 
-	declare @result table 
-		(str varchar(max));
+	declare @out table (s varchar(max));
+	declare @result bit,
+					@error varchar(max) = '';
 
-	insert into @result
-	exec xp_cmdshell @command_string = @cmd;
+	insert into @out
+	exec @result = master.dbo.xp_cmdshell @cmd;
 
-	if exists (select top 1 1 from @result where str is not null)
-	begin
-		declare @error varchar(max) = '';
-
-		select @error += isnull(str, '
-') + '
+	if (@result != 0 and @ignore_error = 0)
+	begin 
+	select @error += s + '
 '
-			from @result;
+		from @out
+		where s is not null
 
-		throw 67000, @error, 1;
+		set @error = 'Error executing ''' + @cmd + ''': ' + @error;
+		throw 60060, @error, 1;
 	end
-end;
+end
 go
